@@ -1,0 +1,27 @@
+version: '3'
+
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: config/docker/nginx/Dockerfile
+    volumes:
+      - .:/var/www/app
+    ports:
+      - 8001:80
+    networks:
+      - symfony
+  php:
+    build:
+      context: .
+      dockerfile: config/docker/php-fpm/Dockerfile
+    volumes:
+      - .:/var/www/app
+    networks:
+      - symfony
+  redis:
+    image: "redis:alpine"
+    networks:
+      - symfony
+networks:
+  symfony:
