@@ -31,7 +31,7 @@ class StatsController extends AbstractController
      */
     public function stats(Request $request): Response
     {
-        $repoQuery = $request->query->get('repo', '');
+        $repoQuery = $request->query->filter('repos', '', FILTER_SANITIZE_STRING);
         $parsedQuery = $this->validateRepoName($repoQuery);
         [$userName, $repoName] = $parsedQuery;
 
@@ -54,7 +54,7 @@ class StatsController extends AbstractController
         $repoData = explode(',', $repoDataQuery);
         $repoNames = array_map(fn ($s) => $this->validateRepoName($s), $repoData);
 
-        if (count($repoNames) === 1) {
+        if (count($repoNames) <= 1) {
             throw new BadRequestHttpException('At least 2 repos needed for comparison');
         }
 

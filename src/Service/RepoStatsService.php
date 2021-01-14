@@ -132,6 +132,8 @@ class RepoStatsService implements RepoStatsServiceInterface
         $item->set($this->requestArray($method, $url));
         $item->expiresAfter(3600); // Expires after 1h
 
+        $this->cache->save($item);
+
         return $item->get();
     }
 
