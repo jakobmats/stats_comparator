@@ -6,6 +6,7 @@ This is a Symfony & docker-compose based project.
 
 1. `cp .env.dist .env`
 1. Fill in your GitHub API key
+1. `composer install`
 1. `docker-compose up --build -d`
 1. Go to http://localhost:8001.
 

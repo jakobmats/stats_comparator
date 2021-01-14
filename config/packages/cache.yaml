@@ -1,6 +1,4 @@
 framework:
     cache:
-
-        # Redis
-        app: cache.adapter.redis
-        default_redis_provider: redis://localhost
+        directory: '%kernel.cache_dir%/pools'
+        app: cache.adapter.filesystem

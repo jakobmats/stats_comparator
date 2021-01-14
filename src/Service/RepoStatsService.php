@@ -8,6 +8,7 @@ use App\Model\RepoStats;
 use App\Model\RepoStatsInterface;
 use DateTime;
 use Exception;
+use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\HttpClient\Exception\ClientException;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -16,10 +17,12 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 class RepoStatsService implements RepoStatsServiceInterface
 {
     private HttpClientInterface $client;
+    private ?AdapterInterface $cache;
 
-    public function __construct(HttpClientInterface $githubClient)
+    public function __construct(HttpClientInterface $githubClient, AdapterInterface $cache = null)
     {
         $this->client = $githubClient;
+        $this->cache = $cache;
     }
 
     public function getRepoStats(RepoInterface $repo): RepoStatsInterface
@@ -43,9 +46,9 @@ class RepoStatsService implements RepoStatsServiceInterface
     public function findRepo(string $userName, string $repoName): ?RepoInterface
     {
         try {
-            $response = $this->client->request('GET', "https://api.github.com/repos/$userName/$repoName");
+            $response = $this->cachedRequest('GET', "https://api.github.com/repos/$userName/$repoName");
 
-            return new Repo($userName, $repoName, $response->toArray());
+            return new Repo($userName, $repoName, $response);
         } catch (ClientException $exception) {
 
             // Repo was not found
@@ -78,10 +81,10 @@ class RepoStatsService implements RepoStatsServiceInterface
         $repoName = $repo->getName();
 
         try {
-            $response = $this->client->request('GET', "https://api.github.com/repos/$userName/$repoName/pulls?state=$state");
+            $response = $this->cachedRequest('GET', "https://api.github.com/repos/$userName/$repoName/pulls?state=$state");
 
             // TODO: Pagination - max pull request count is 30 per page
-            return count($response->toArray());
+            return count($response);
         } catch (ClientException $exception) {
 
 
@@ -100,9 +103,7 @@ class RepoStatsService implements RepoStatsServiceInterface
         $repoName = $repo->getName();
 
         try {
-            $response = $this->client->request('GET', "https://api.github.com/repos/$userName/$repoName/releases/latest");
-
-            return $response->toArray();
+            return $this->cachedRequest('GET', "https://api.github.com/repos/$userName/$repoName/releases/latest");
         } catch (ClientException $exception) {
 
             // No releases found
@@ -112,5 +113,37 @@ class RepoStatsService implements RepoStatsServiceInterface
 
             throw $exception;
         }
+    }
+
+    private function cachedRequest(string $method, string $url): array
+    {
+        $key = $this->cacheKeyFromUrl($url);
+
+        // No caching
+        if ($this->cache === null) {
+            return $this->requestArray($method, $url);
+        }
+
+        $item = $this->cache->getItem($key);
+        if ($item->isHit()) {
+            return $item->get();
+        }
+
+        $item->set($this->requestArray($method, $url));
+        $item->expiresAfter(3600); // Expires after 1h
+
+        return $item->get();
+    }
+
+    private function requestArray(string $method, string $url)
+    {
+        $response = $this->client->request($method, $url);
+
+        return $response->toArray();
+    }
+
+    private function cacheKeyFromUrl(string $url)
+    {
+        return preg_replace('/[^a-zA-Z0-9_.]+/', '_', $url);
     }
 }

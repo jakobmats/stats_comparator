@@ -7,10 +7,12 @@
         "php": ">=7.4",
         "ext-ctype": "*",
         "ext-iconv": "*",
+        "ext-json": "*",
         "doctrine/annotations": "^1.11",
         "guzzlehttp/guzzle": "^7.0.1",
         "http-interop/http-factory-guzzle": "^1.0",
         "phpdocumentor/reflection-docblock": "^5.2",
+        "predis/predis": "^1.1",
         "symfony/asset": "5.2.*",
         "symfony/console": "5.2.*",
         "symfony/dotenv": "5.2.*",
@@ -20,8 +22,7 @@
         "symfony/property-access": "5.2.*",
         "symfony/property-info": "5.2.*",
         "symfony/serializer": "5.2.*",
-        "symfony/yaml": "5.2.*",
-        "ext-json": "*"
+        "symfony/yaml": "5.2.*"
     },
     "require-dev": {
         "symfony/phpunit-bridge": "^5.2"

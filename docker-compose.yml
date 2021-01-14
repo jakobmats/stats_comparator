@@ -19,9 +19,5 @@ services:
       - .:/var/www/app
     networks:
       - symfony
-  redis:
-    image: "redis:alpine"
-    networks:
-      - symfony
 networks:
   symfony:
