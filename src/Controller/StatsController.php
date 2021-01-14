@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use App\Service\RepoStatsComparisonService;
 use App\Service\RepoStatsService;
-use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -27,11 +26,10 @@ class StatsController extends AbstractController
      *
      * @param Request $request
      * @return Response
-     * @throws Exception
      */
     public function stats(Request $request): Response
     {
-        $repoQuery = $request->query->filter('repos', '', FILTER_SANITIZE_STRING);
+        $repoQuery = $request->query->filter('repo', '', FILTER_SANITIZE_STRING);
         $parsedQuery = $this->validateRepoName($repoQuery);
         [$userName, $repoName] = $parsedQuery;
 
@@ -46,7 +44,6 @@ class StatsController extends AbstractController
      *
      * @param Request $request
      * @return Response
-     * @throws Exception
      */
     public function compareStats(Request $request): Response
     {
@@ -71,7 +68,7 @@ class StatsController extends AbstractController
         if (preg_match('~^([\w\d_-]+)/([\w\d_-]+)$~', $data, $matches) === 1) {
             $regexGroups = array_slice($matches, 1);
 
-            if (count($regexGroups) !== 2) {
+            if (count($regexGroups) < 2) {
                 throw new BadRequestHttpException('User or repo name missing.');
             }
 

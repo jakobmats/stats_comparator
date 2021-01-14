@@ -2,7 +2,6 @@
 
 namespace App\Tests\Service;
 
-use App\Model\Repo;
 use App\Model\RepoInterface;
 use App\Service\RepoStatsService;
 use App\Tests\MockRepoDataTrait;

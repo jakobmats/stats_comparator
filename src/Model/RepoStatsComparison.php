@@ -2,8 +2,6 @@
 
 namespace App\Model;
 
-use DateTime;
-
 class RepoStatsComparison implements RepoStatsComparisonInterface
 {
     private array $groupedForkCount;

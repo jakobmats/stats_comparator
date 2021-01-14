@@ -7,8 +7,6 @@ use App\Model\RepoStatsInterface;
 use DateTime;
 
 /**
- * Interface RepoStatsServiceInterface
- *
  * Retrieves data associated to VCS repositories
  *
  * @package App\Service

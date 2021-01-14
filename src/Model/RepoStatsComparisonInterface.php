@@ -2,8 +2,6 @@
 
 namespace App\Model;
 
-use DateTime;
-
 /**
  * Represents stats comparison of two or more repos
  *
