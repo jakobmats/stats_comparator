@@ -23,6 +23,8 @@ class RepoStatsComparisonService implements RepoStatsComparisonServiceInterface
 
     private function compareProperties(callable $getter, RepoStatsInterface ...$repoStatsGroup): array
     {
+
+        // Group and sort repo stats together with respective repo names
         $values = array_merge(...array_map(fn (RepoStats $repoStats) => [$repoStats->getName() => $getter($repoStats)], $repoStatsGroup));
         arsort($values);
 

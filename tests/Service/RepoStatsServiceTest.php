@@ -10,6 +10,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class RepoStatsServiceTest extends TestCase
 {
@@ -35,15 +36,15 @@ class RepoStatsServiceTest extends TestCase
 
     public function testRepoDoesNotExist()
     {
+        $this->expectException(NotFoundHttpException::class);
+
         $client = new MockHttpClient(
             new MockResponse('', [
                 'http_code' => Response::HTTP_NOT_FOUND
             ])
         );
         $service = new RepoStatsService($client);
-        $repo = $service->findRepo('foo', 'bar');
-
-        $this->assertNull($repo);
+        $service->findRepo('foo', 'bar');
     }
 
     public function testReleaseFound()

@@ -14,22 +14,26 @@ class RepoStatsComparisonServiceTest extends TestCase
 
     public function testCompareTwoRepos()
     {
+        $yesterdayDate = new DateTime('yesterday');
+        $date = new DateTime;
+
         $first = new RepoStats(
             1,
             2,
             3,
             4,
             5,
-            new DateTime(),
+            $yesterdayDate,
             'foo/bar'
         );
+
         $second = new RepoStats(
             10,
             20,
             30,
             40,
             50,
-            new DateTime('yesterday'),
+            $date,
             'bacon/cheese'
         );
 
@@ -45,6 +49,26 @@ class RepoStatsComparisonServiceTest extends TestCase
             'bacon/cheese' => 20,
             'foo/bar' => 2,
         ], $result->getGroupedStarCount());
+
+        $this->assertEquals([
+            'bacon/cheese' => 30,
+            'foo/bar' => 3,
+        ], $result->getGroupedWatcherCount());
+
+        $this->assertEquals([
+            'bacon/cheese' => 40,
+            'foo/bar' => 4,
+        ], $result->getGroupedOpenPullRequestCount());
+
+        $this->assertEquals([
+            'bacon/cheese' => 50,
+            'foo/bar' => 5,
+        ], $result->getGroupedClosedPullRequestCount());
+
+        $this->assertEquals([
+            'bacon/cheese' => $date,
+            'foo/bar' => $yesterdayDate,
+        ], $result->getGroupedLatestReleaseDate());
     }
 
     public function testMissingDate()

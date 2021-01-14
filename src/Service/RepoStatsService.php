@@ -2,7 +2,6 @@
 
 namespace App\Service;
 
-use App\Exception\RepoNotFoundException;
 use App\Model\Repo;
 use App\Model\RepoInterface;
 use App\Model\RepoStats;
@@ -11,6 +10,7 @@ use DateTime;
 use Exception;
 use Symfony\Component\HttpClient\Exception\ClientException;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class RepoStatsService implements RepoStatsServiceInterface
@@ -22,9 +22,6 @@ class RepoStatsService implements RepoStatsServiceInterface
         $this->client = $githubClient;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getRepoStats(RepoInterface $repo): RepoStatsInterface
     {
         $dataBag = $repo->getDataBag();
@@ -43,9 +40,6 @@ class RepoStatsService implements RepoStatsServiceInterface
         );
     }
 
-    /**
-     * @inheritDoc
-     */
     public function findRepo(string $userName, string $repoName): ?RepoInterface
     {
         try {
@@ -56,16 +50,13 @@ class RepoStatsService implements RepoStatsServiceInterface
 
             // Repo was not found
             if ($exception->getResponse()->getStatusCode() === Response::HTTP_NOT_FOUND) {
-                return null;
+                throw new NotFoundHttpException('Requested repo ' . "$userName/$repoName" . ' was not found.');
             }
 
             throw $exception;
         }
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getLatestReleaseDate(RepoInterface $repo): ?DateTime
     {
         $releaseData = $this->getLatestRelease($repo);
@@ -81,9 +72,6 @@ class RepoStatsService implements RepoStatsServiceInterface
         }
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getPullRequestCount(RepoInterface $repo, string $state = 'open'): int
     {
         $userName = $repo->getUserName();
@@ -106,9 +94,6 @@ class RepoStatsService implements RepoStatsServiceInterface
         }
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getLatestRelease(RepoInterface $repo): array
     {
         $userName = $repo->getUserName();
