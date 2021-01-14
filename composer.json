@@ -10,7 +10,6 @@
         "doctrine/annotations": "^1.11",
         "guzzlehttp/guzzle": "^7.0.1",
         "http-interop/http-factory-guzzle": "^1.0",
-        "nelmio/api-doc-bundle": "^4.1",
         "phpdocumentor/reflection-docblock": "^5.2",
         "symfony/asset": "5.2.*",
         "symfony/console": "5.2.*",
@@ -21,7 +20,6 @@
         "symfony/property-access": "5.2.*",
         "symfony/property-info": "5.2.*",
         "symfony/serializer": "5.2.*",
-        "symfony/twig-bundle": "5.2.*",
         "symfony/yaml": "5.2.*",
         "ext-json": "*"
     },
