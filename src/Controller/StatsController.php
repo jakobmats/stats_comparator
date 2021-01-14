@@ -2,7 +2,6 @@
 
 namespace App\Controller;
 
-use App\Model\RepoInterface;
 use App\Service\RepoStatsComparisonService;
 use App\Service\RepoStatsService;
 use Exception;
@@ -33,19 +32,10 @@ class StatsController extends AbstractController
     public function stats(Request $request): Response
     {
         $repoQuery = $request->query->get('repo', '');
-        $parsedQuery = $this->parseRepoName($repoQuery);
-
-        if (count($parsedQuery) !== 2) {
-            throw new BadRequestHttpException('Invalid owner or repo name.');
-        }
-
+        $parsedQuery = $this->validateRepoName($repoQuery);
         [$userName, $repoName] = $parsedQuery;
+
         $repo = $this->repoStatsService->findRepo($userName, $repoName);
-
-        if ($repo === null) {
-            throw $this->createNotFoundException('Requested repo was not found.');
-        }
-
         $stats = $this->repoStatsService->getRepoStats($repo);
 
         return $this->json($stats);
@@ -60,35 +50,34 @@ class StatsController extends AbstractController
      */
     public function compareStats(Request $request): Response
     {
-        $repoDataQuery = $request->query->get('repos', '');
+        $repoDataQuery = $request->query->filter('repos', '', FILTER_SANITIZE_STRING);
         $repoData = explode(',', $repoDataQuery);
-        $repoNames = array_map(fn ($s) => $this->parseRepoName($s), $repoData);
-        $repos = array_map(function ($repoName): RepoInterface {
-            $repo = $this->repoStatsService->findRepo(...$repoName);
+        $repoNames = array_map(fn ($s) => $this->validateRepoName($s), $repoData);
 
-            if ($repo === null) {
-                throw $this->createNotFoundException('Requested repo was not found.');
-            }
+        if (count($repoNames) === 1) {
+            throw new BadRequestHttpException('At least 2 repos needed for comparison');
+        }
 
-            return $repo;
-        }, $repoNames);
-
-        $stats = array_map(
-            fn (RepoInterface $repo) => $this->repoStatsService->getRepoStats($repo),
-            $repos
-        );
+        $repos = array_map(fn ($repoName) => $this->repoStatsService->findRepo(...$repoName), $repoNames);
+        $stats = array_map(fn ($repo) => $this->repoStatsService->getRepoStats($repo), $repos);
 
         $statsComparison = $this->repoStatsComparisonService->compare(...$stats);
 
         return $this->json($statsComparison);
     }
 
-    private function parseRepoName(string $data): array
+    private function validateRepoName(string $data): array
     {
-        if (preg_match('~([\w\d_-]+)/([\w\d_-]+)~', $data, $matches) === 1) {
+        if (preg_match('~^([\w\d_-]+)/([\w\d_-]+)$~', $data, $matches) === 1) {
+            $regexGroups = array_slice($matches, 1);
+
+            if (count($regexGroups) !== 2) {
+                throw new BadRequestHttpException('User or repo name missing.');
+            }
+
             return array_slice($matches, 1);
         }
 
-        return [];
+        throw new BadRequestHttpException('Invalid repo data provided.');
     }
 }
